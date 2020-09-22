@@ -12,6 +12,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
+import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import kotlinx.coroutines.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -80,13 +82,16 @@ class TinkoffAcquiringSdkPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
 
     methodCallScope.doOnMain { initializeActivity(binding!!.activity) }
     return suspendCoroutine { sink ->
-      binding?.addActivityResultListener { _requestCode, resultCode, data ->
-        if(requestCode != _requestCode || data == null) false
-        else {
-          methodCallScope.doOnMain { sink.resume(activityResultMapper(resultCode, data)) }
-          true
+      binding?.addActivityResultListener(object: ActivityResultListener {
+        override fun onActivityResult(_requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+          binding?.removeActivityResultListener(this)
+          return if (requestCode != _requestCode || data == null) false
+          else {
+            methodCallScope.doOnMain { sink.resume(activityResultMapper(resultCode, data)) }
+            true
+          }
         }
-      }
+      })
     }
   }
 }
