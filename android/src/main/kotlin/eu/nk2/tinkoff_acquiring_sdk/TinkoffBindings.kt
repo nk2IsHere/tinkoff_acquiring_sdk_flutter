@@ -7,11 +7,20 @@ import ru.tinkoff.acquiring.sdk.localization.Language
 import ru.tinkoff.acquiring.sdk.models.DarkThemeMode
 import ru.tinkoff.acquiring.sdk.models.enums.CheckType
 import ru.tinkoff.acquiring.sdk.utils.Money
+import java.lang.Exception
 
 typealias MethodChannelFunction = suspend (call: MethodCall, result: MethodChannel.Result, delegate: TinkoffAcquiringSdkDelegate, scope: CoroutineScope) -> Unit
 
+fun safe(function: MethodChannelFunction): MethodChannelFunction = { call, result, delegate, scope ->
+    try {
+        function(call, result, delegate, scope)
+    } catch (e: Exception) {
+        result.error(TINKOFF_COMMON_STATUS_FATAL_ERROR, e.message, null)
+    }
+}
+
 private const val TINKOFF_INITIALIZE_ID = "initialize"
-private val tinkoffInitialize: MethodChannelFunction = { call, result, delegate, scope ->
+private val tinkoffInitialize: MethodChannelFunction = safe { call, result, delegate, scope ->
     val methodCallResult = delegate.initialize(
         enableDebug = call.argument("enableDebug") ?: false,
         terminalKey = call.argument("terminalKey") ?: error("terminalKey is required in initialize method"),
@@ -28,15 +37,10 @@ private val tinkoffInitialize: MethodChannelFunction = { call, result, delegate,
 }
 
 private const val TINKOFF_OPEN_ATTACH_SCREEN = "openAttachCardScreen"
-private val tinkoffOpenAttachCardScreen: MethodChannelFunction = { call, result, delegate, scope ->
+private val tinkoffOpenAttachCardScreen: MethodChannelFunction = safe { call, result, delegate, scope ->
     val methodCallResult = delegate.openAttachCardScreen(
-        customerId = call.argument("customerId") ?: error("customerId is required in openAttachCardScreen method"),
-        checkType = call.argument<String>("checkType")?.let { CheckType.valueOf(it) } ?: CheckType.NO,
-        email = call.argument("email"),
-        enableSecureKeyboard = call.argument("enableSecureKeyboard") ?: false,
-        enableCameraCardScanner = call.argument("enableCameraCardScanner") ?: false,
-        darkThemeMode = call.argument<String>("darkThemeMode")?.let { DarkThemeMode.valueOf(it) } ?: DarkThemeMode.AUTO,
-        language = call.argument<String>("language")?.let { Language.valueOf(it) } ?: error("language is required in openAttachCardScreen method")
+        tinkoffCustomerOptions = call.toTinkoffCustomerOptions(),
+        tinkoffFeaturesOptions = call.toTinkoffFeaturesOptions()
     )
 
     scope.doOnMain { result.success(mapOf(
@@ -47,20 +51,11 @@ private val tinkoffOpenAttachCardScreen: MethodChannelFunction = { call, result,
 }
 
 private const val TINKOFF_OPEN_PAYMENT_SCREEN = "openPaymentScreen"
-private val tinkoffOpenPaymentScreen: MethodChannelFunction = { call, result, delegate, scope ->
+private val tinkoffOpenPaymentScreen: MethodChannelFunction = safe { call, result, delegate, scope ->
     val methodCallResult = delegate.openPaymentScreen(
-        orderId = call.argument("orderId") ?: error("orderId is required in openPaymentScreen method"),
-        title = call.argument("title") ?: error("title is required in openPaymentScreen method"),
-        description = call.argument("description") ?: error("description is required in openPaymentScreen method"),
-        money = Money.Companion.ofRubles(call.argument<Double>("money") ?: error("money is required in openPaymentScreen method")),
-        customerId = call.argument("customerId") ?: error("customerId is required in openPaymentScreen method"),
-        recurrentPayment = call.argument("recurrentPayment") ?: false,
-        checkType = call.argument<String>("checkType")?.let { CheckType.valueOf(it) } ?: CheckType.NO,
-        email = call.argument("email"),
-        enableSecureKeyboard = call.argument("enableSecureKeyboard") ?: false,
-        enableCameraCardScanner = call.argument("enableCameraCardScanner") ?: false,
-        darkThemeMode = call.argument<String>("darkThemeMode")?.let { DarkThemeMode.valueOf(it) } ?: DarkThemeMode.AUTO,
-        language = call.argument<String>("language")?.let { Language.valueOf(it) } ?: error("language is required in openPaymentScreen method")
+        tinkoffOrderOptions = call.toTinkoffOrderOptions(),
+        tinkoffCustomerOptions = call.toTinkoffCustomerOptions(),
+        tinkoffFeaturesOptions = call.toTinkoffFeaturesOptions()
     )
 
     scope.doOnMain { result.success(mapOf(
@@ -72,32 +67,19 @@ private val tinkoffOpenPaymentScreen: MethodChannelFunction = { call, result, de
 }
 
 private const val TINKOFF_OPEN_GOOGLE_PAY = "openGooglePay"
-private val tinkoffOpenGooglePay: MethodChannelFunction = { call, result, delegate, scope ->
-    val orderId: String = call.argument("orderId") ?: error("orderId is required in openPaymentScreen method")
-    val title: String = call.argument("title") ?: error("title is required in openPaymentScreen method")
-    val description: String = call.argument("description") ?: error("description is required in openPaymentScreen method")
-    val money: Money = Money.Companion.ofRubles(call.argument<Double>("money") ?: error("money is required in openPaymentScreen method"))
-    val customerId: String = call.argument("customerId") ?: error("customerId is required in openPaymentScreen method")
-    val recurrentPayment: Boolean = call.argument("recurrentPayment") ?: false
-    val checkType: CheckType = call.argument<String>("checkType")?.let { CheckType.valueOf(it) } ?: CheckType.NO
-    val email: String? = call.argument("email")
-    val enableSecureKeyboard: Boolean = call.argument("enableSecureKeyboard") ?: false
-    val enableCameraCardScanner: Boolean = call.argument("enableCameraCardScanner") ?: false
-    val darkThemeMode: DarkThemeMode = call.argument<String>("darkThemeMode")?.let { DarkThemeMode.valueOf(it) } ?: DarkThemeMode.AUTO
-    val language: Language = call.argument<String>("language")?.let { Language.valueOf(it) } ?: error("language is required in openPaymentScreen method")
+private val tinkoffOpenGooglePay: MethodChannelFunction = safe { call, result, delegate, scope ->
+    val tinkoffOrderOptions = call.toTinkoffOrderOptions()
+    val tinkoffCustomerOptions = call.toTinkoffCustomerOptions()
+    val tinkoffFeaturesOptions = call.toTinkoffFeaturesOptions()
 
     val methodCallResult = delegate.openGooglePay(
-        orderId, money, title, description, customerId, recurrentPayment,
-        checkType, email, enableSecureKeyboard, enableCameraCardScanner, darkThemeMode,
-        language
+        tinkoffOrderOptions, tinkoffCustomerOptions, tinkoffFeaturesOptions
     )
 
     when(methodCallResult.status) {
         TinkoffAcquiringSdkDelegate.TinkoffAcquiringDelegateOpenGooglePayStatus.RESULT_REOPEN_UI -> {
             val methodCallResult = delegate.openPaymentScreen(
-                orderId, money, title, description, customerId, recurrentPayment,
-                checkType, email, enableSecureKeyboard, enableCameraCardScanner, darkThemeMode,
-                methodCallResult.paymentState, language
+                tinkoffOrderOptions, tinkoffCustomerOptions, tinkoffFeaturesOptions, methodCallResult.paymentState
             )
 
             scope.doOnMain { result.success(mapOf(
@@ -117,12 +99,9 @@ private val tinkoffOpenGooglePay: MethodChannelFunction = { call, result, delega
 }
 
 private const val TINKOFF_OPEN_PAYMENT_QR_SCREEN = "openPaymentQrScreen"
-private val tinkoffOpenPaymentQrScreen: MethodChannelFunction = { call, result, delegate, scope ->
+private val tinkoffOpenPaymentQrScreen: MethodChannelFunction = safe { call, result, delegate, scope ->
     val methodCallResult = delegate.openPaymentQrScreen(
-        enableSecureKeyboard = call.argument("enableSecureKeyboard") ?: false,
-        enableCameraCardScanner = call.argument("enableCameraCardScanner") ?: false,
-        darkThemeMode = call.argument<String>("darkThemeMode")?.let { DarkThemeMode.valueOf(it) } ?: DarkThemeMode.AUTO,
-        language = call.argument<String>("language")?.let { Language.valueOf(it) } ?: error("language is required in openPaymentQrScreen method")
+        tinkoffFeaturesOptions = call.toTinkoffFeaturesOptions()
     )
 
     scope.doOnMain { result.success(mapOf(
@@ -132,15 +111,10 @@ private val tinkoffOpenPaymentQrScreen: MethodChannelFunction = { call, result, 
 }
 
 private const val TINKOFF_OPEN_SAVED_CARDS_SCREEN = "openSavedCardsScreen"
-private val tinkoffOpenSavedCardsScreen: MethodChannelFunction = { call, result, delegate, scope ->
+private val tinkoffOpenSavedCardsScreen: MethodChannelFunction = safe { call, result, delegate, scope ->
     val methodCallResult = delegate.openSavedCardsScreen(
-        customerId = call.argument("customerId") ?: error("customerId is required in openPaymentScreen method"),
-        checkType = call.argument<String>("checkType")?.let { CheckType.valueOf(it) } ?: CheckType.NO,
-        email = call.argument("email"),
-        enableSecureKeyboard = call.argument("enableSecureKeyboard") ?: false,
-        enableCameraCardScanner = call.argument("enableCameraCardScanner") ?: false,
-        darkThemeMode = call.argument<String>("darkThemeMode")?.let { DarkThemeMode.valueOf(it) } ?: DarkThemeMode.AUTO,
-        language = call.argument<String>("language")?.let { Language.valueOf(it) } ?: error("language is required in openSavedCardsScreen method")
+        tinkoffCustomerOptions = call.toTinkoffCustomerOptions(),
+        tinkoffFeaturesOptions = call.toTinkoffFeaturesOptions()
     )
 
     scope.doOnMain { result.success(mapOf(

@@ -44,6 +44,7 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
         requireAddress: Boolean,
         requirePhone: Boolean
     ): TinkoffAcquiringDelegateInitializeResponse {
+        if(activityDelegate.activity !is FragmentActivity) error("Plugin cannot be initialized if activity you are using does not extend FlutterFragmentActivity")
         if(activityDelegate.activity == null || activityDelegate.context == null) return TinkoffAcquiringDelegateInitializeResponse(status = TinkoffAcquiringDelegateInitializeStatus.FLUTTER_NOT_INITIALIZED)
         if(tinkoffAcquiring != null || googlePayHelper != null) return TinkoffAcquiringDelegateInitializeResponse(status = TinkoffAcquiringDelegateInitializeStatus.PLUGIN_ALREADY_INITIALIZED)
 
@@ -78,32 +79,17 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
     )
     enum class TinkoffAcquiringDelegateOpenAttachScreenStatus { RESULT_OK, RESULT_CANCELLED, RESULT_NONE, RESULT_ERROR, ERROR_NOT_INITIALIZED, ERROR_NO_ACTIVITY }
     suspend fun openAttachCardScreen(
-        customerId: String,
-        checkType: CheckType,
-        email: String?,
-        enableSecureKeyboard: Boolean,
-        enableCameraCardScanner: Boolean,
-        darkThemeMode: DarkThemeMode,
-        language: Language
+        tinkoffCustomerOptions: TinkoffCustomerOptions,
+        tinkoffFeaturesOptions: TinkoffFeaturesOptions
     ): TinkoffAcquiringDelegateOpenAttachScreenResponse {
         if(tinkoffAcquiring == null) return TinkoffAcquiringDelegateOpenAttachScreenResponse(status = TinkoffAcquiringDelegateOpenAttachScreenStatus.ERROR_NOT_INITIALIZED)
 
-        val attachCardOptions = AttachCardOptions().setOptions {
-            customerOptions {
-                this.customerKey = customerId
-                this.checkType = checkType.toString()
-                this.email = email
-            }
-            featuresOptions {
-                this.useSecureKeyboard = enableSecureKeyboard
-                if(enableCameraCardScanner) this.cameraCardScanner = CameraCardIOScanner()
-                this.darkThemeMode = darkThemeMode
-                this.localizationSource = AsdkSource(language = language)
-            }
-        }
-
         return activityDelegate.runActivityForResult(
-            { activity -> tinkoffAcquiring!!.openAttachCardScreen(activity as FragmentActivity, attachCardOptions, TINKOFF_ACQUIRING_OPEN_ATTACH_CARD_SCREEN_REQUEST) },
+            { activity -> tinkoffAcquiring!!.openAttachCardScreen(
+                activity as FragmentActivity,
+                makeTinkoffAttachCardOptions(tinkoffCustomerOptions, tinkoffFeaturesOptions),
+                TINKOFF_ACQUIRING_OPEN_ATTACH_CARD_SCREEN_REQUEST
+            ) },
             TINKOFF_ACQUIRING_OPEN_ATTACH_CARD_SCREEN_REQUEST,
             { resultCode, data -> when(resultCode) {
                 Activity.RESULT_OK -> TinkoffAcquiringDelegateOpenAttachScreenResponse(
@@ -132,45 +118,20 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
     )
     enum class TinkoffAcquiringDelegateOpenPaymentScreenStatus { RESULT_OK, RESULT_CANCELLED, RESULT_NONE, RESULT_ERROR, ERROR_NOT_INITIALIZED, ERROR_NO_ACTIVITY }
     suspend fun openPaymentScreen(
-        orderId: String,
-        money: Money,
-        title: String,
-        description: String,
-        customerId: String,
-        recurrentPayment: Boolean,
-        checkType: CheckType,
-        email: String?,
-        enableSecureKeyboard: Boolean,
-        enableCameraCardScanner: Boolean,
-        darkThemeMode: DarkThemeMode,
-        paymentState: AsdkState? = null,
-        language: Language
+        tinkoffOrderOptions: TinkoffOrderOptions,
+        tinkoffCustomerOptions: TinkoffCustomerOptions,
+        tinkoffFeaturesOptions: TinkoffFeaturesOptions,
+        paymentState: AsdkState? = null
     ): TinkoffAcquiringDelegateOpenPaymentScreenResponse {
         if(tinkoffAcquiring == null) return TinkoffAcquiringDelegateOpenPaymentScreenResponse(status = TinkoffAcquiringDelegateOpenPaymentScreenStatus.ERROR_NOT_INITIALIZED)
 
-        val paymentOptions = PaymentOptions().setOptions {
-            orderOptions {
-                this.orderId = orderId
-                this.amount = money
-                this.title = title
-                this.description = description
-                this.recurrentPayment = recurrentPayment
-            }
-            customerOptions {
-                this.customerKey = customerId
-                this.checkType = checkType.toString()
-                this.email = email
-            }
-            featuresOptions {
-                this.useSecureKeyboard = enableSecureKeyboard
-                if(enableCameraCardScanner) this.cameraCardScanner = CameraCardIOScanner()
-                this.darkThemeMode = darkThemeMode
-                this.localizationSource = AsdkSource(language = language)
-            }
-        }
-
         return activityDelegate.runActivityForResult(
-            { activity -> tinkoffAcquiring!!.openPaymentScreen(activity as FragmentActivity, paymentOptions, TINKOFF_ACQUIRING_OPEN_PAYMENT_SCREEN_REQUEST, paymentState ?: DefaultState) },
+            { activity -> tinkoffAcquiring!!.openPaymentScreen(
+                activity as FragmentActivity,
+                makeTinkoffPaymentOptions(tinkoffOrderOptions, tinkoffCustomerOptions, tinkoffFeaturesOptions),
+                TINKOFF_ACQUIRING_OPEN_PAYMENT_SCREEN_REQUEST,
+                paymentState ?: DefaultState
+            ) },
             TINKOFF_ACQUIRING_OPEN_PAYMENT_SCREEN_REQUEST,
             { resultCode, data -> when(resultCode) {
                 Activity.RESULT_OK -> TinkoffAcquiringDelegateOpenPaymentScreenResponse(
@@ -201,44 +162,14 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
     )
     enum class TinkoffAcquiringDelegateOpenGooglePayStatus { RESULT_OK, RESULT_CANCELLED, RESULT_REOPEN_UI, RESULT_ERROR, ERROR_NOT_INITIALIZED, ERROR_NO_ACTIVITY }
     suspend fun openGooglePay(
-        orderId: String,
-        money: Money,
-        title: String,
-        description: String,
-        customerId: String,
-        recurrentPayment: Boolean,
-        checkType: CheckType,
-        email: String?,
-        enableSecureKeyboard: Boolean,
-        enableCameraCardScanner: Boolean,
-        darkThemeMode: DarkThemeMode,
-        language: Language
+        tinkoffOrderOptions: TinkoffOrderOptions,
+        tinkoffCustomerOptions: TinkoffCustomerOptions,
+        tinkoffFeaturesOptions: TinkoffFeaturesOptions
     ): TinkoffAcquiringDelegateOpenGooglePayResponse {
         if(tinkoffAcquiring == null || googlePayHelper == null) return TinkoffAcquiringDelegateOpenGooglePayResponse(status = TinkoffAcquiringDelegateOpenGooglePayStatus.ERROR_NOT_INITIALIZED)
 
-        val paymentOptions = PaymentOptions().setOptions {
-            orderOptions {
-                this.orderId = orderId
-                this.amount = money
-                this.title = title
-                this.description = description
-                this.recurrentPayment = recurrentPayment
-            }
-            customerOptions {
-                this.customerKey = customerId
-                this.checkType = checkType.toString()
-                this.email = email
-            }
-            featuresOptions {
-                this.useSecureKeyboard = enableSecureKeyboard
-                if(enableCameraCardScanner) this.cameraCardScanner = CameraCardIOScanner()
-                this.darkThemeMode = darkThemeMode
-                this.localizationSource = AsdkSource(language = language)
-            }
-        }
-
         val googlePayToken = activityDelegate.runActivityForResult(
-            { activity -> googlePayHelper!!.openGooglePay(activity, money, TINKOFF_ACQUIRING_OPEN_GOOGLE_PAY_REQUEST) },
+            { activity -> googlePayHelper!!.openGooglePay(activity, tinkoffOrderOptions.money, TINKOFF_ACQUIRING_OPEN_GOOGLE_PAY_REQUEST) },
             TINKOFF_ACQUIRING_OPEN_GOOGLE_PAY_REQUEST,
             { resultCode, data -> when(resultCode) {
                 Activity.RESULT_OK -> GooglePayHelper.getGooglePayToken(data)
@@ -252,7 +183,7 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
         if(googlePayToken == "canceled") return TinkoffAcquiringDelegateOpenGooglePayResponse(status = TinkoffAcquiringDelegateOpenGooglePayStatus.RESULT_CANCELLED)
 
         return suspendCoroutine { sink ->
-            tinkoffAcquiring!!.initPayment(googlePayToken, paymentOptions)
+            tinkoffAcquiring!!.initPayment(googlePayToken,  makeTinkoffPaymentOptions(tinkoffOrderOptions, tinkoffCustomerOptions, tinkoffFeaturesOptions))
                 .subscribe(object: PaymentListenerAdapter() {
                     override fun onSuccess(paymentId: Long, cardId: String?) =
                         sink.resume(TinkoffAcquiringDelegateOpenGooglePayResponse(
@@ -283,22 +214,16 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
     )
     enum class TinkoffAcquiringDelegateOpenPaymentQrScreenStatus { RESULT_OK, RESULT_CANCELLED, RESULT_ERROR, RESULT_NONE, ERROR_NOT_INITIALIZED, ERROR_NO_ACTIVITY }
     suspend fun openPaymentQrScreen(
-        enableSecureKeyboard: Boolean,
-        enableCameraCardScanner: Boolean,
-        darkThemeMode: DarkThemeMode,
-        language: Language
+        tinkoffFeaturesOptions: TinkoffFeaturesOptions
     ): TinkoffAcquiringDelegateOpenPaymentQrScreenResponse {
         if(tinkoffAcquiring == null) return TinkoffAcquiringDelegateOpenPaymentQrScreenResponse(status = TinkoffAcquiringDelegateOpenPaymentQrScreenStatus.ERROR_NOT_INITIALIZED)
 
-        val featuresOptions = FeaturesOptions().apply {
-            this.useSecureKeyboard = enableSecureKeyboard
-            if(enableCameraCardScanner) this.cameraCardScanner = CameraCardIOScanner()
-            this.darkThemeMode = darkThemeMode
-            this.localizationSource = AsdkSource(language = language)
-        }
-
         return activityDelegate.runActivityForResult(
-            { activity -> tinkoffAcquiring!!.openStaticQrScreen(activity as FragmentActivity, featuresOptions, TINKOFF_ACQUIRING_OPEN_PAYMENT_QR_SCREEN_REQUEST) },
+            { activity -> tinkoffAcquiring!!.openStaticQrScreen(
+                activity as FragmentActivity,
+                tinkoffFeaturesOptions.toTinkoff(),
+                TINKOFF_ACQUIRING_OPEN_PAYMENT_QR_SCREEN_REQUEST
+            ) },
             TINKOFF_ACQUIRING_OPEN_PAYMENT_QR_SCREEN_REQUEST,
             { resultCode, data -> when(resultCode) {
                 Activity.RESULT_OK -> TinkoffAcquiringDelegateOpenPaymentQrScreenResponse(
@@ -326,33 +251,17 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
     )
     enum class TinkoffAcquiringDelegateOpenSavedCardsScreenStatus { RESULT_OK, RESULT_CANCELLED, RESULT_ERROR, RESULT_NONE, ERROR_NOT_INITIALIZED, ERROR_NO_ACTIVITY }
     suspend fun openSavedCardsScreen(
-        customerId: String,
-        checkType: CheckType,
-        email: String?,
-        enableSecureKeyboard: Boolean,
-        enableCameraCardScanner: Boolean,
-        darkThemeMode: DarkThemeMode,
-        language: Language
+        tinkoffCustomerOptions: TinkoffCustomerOptions,
+        tinkoffFeaturesOptions: TinkoffFeaturesOptions
     ): TinkoffAcquiringDelegateOpenSavedCardsScreenResponse {
         if(tinkoffAcquiring == null) return TinkoffAcquiringDelegateOpenSavedCardsScreenResponse(status = TinkoffAcquiringDelegateOpenSavedCardsScreenStatus.ERROR_NOT_INITIALIZED)
 
-        val savedCardsOptions = SavedCardsOptions().setOptions {
-            customerOptions {
-                this.customerKey = customerId
-                this.checkType = checkType.toString()
-                this.email = email
-            }
-
-            featuresOptions {
-                this.useSecureKeyboard = enableSecureKeyboard
-                if(enableCameraCardScanner) this.cameraCardScanner = CameraCardIOScanner()
-                this.darkThemeMode = darkThemeMode
-                this.localizationSource = AsdkSource(language = language)
-            }
-        }
-
         return activityDelegate.runActivityForResult(
-            { activity -> tinkoffAcquiring!!.openSavedCardsScreen(activity as FragmentActivity, savedCardsOptions, TINKOFF_ACQUIRING_OPEN_SAVED_CARDS_SCREEN_REQUEST) },
+            { activity -> tinkoffAcquiring!!.openSavedCardsScreen(
+                activity as FragmentActivity,
+                makeTinkoffSavedCardsOptions(tinkoffCustomerOptions, tinkoffFeaturesOptions),
+                TINKOFF_ACQUIRING_OPEN_SAVED_CARDS_SCREEN_REQUEST
+            ) },
             TINKOFF_ACQUIRING_OPEN_SAVED_CARDS_SCREEN_REQUEST,
             { resultCode, data -> when(resultCode) {
                 Activity.RESULT_OK -> TinkoffAcquiringDelegateOpenSavedCardsScreenResponse(
