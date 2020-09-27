@@ -113,12 +113,12 @@ public class TinkoffAcquiringDelegate {
     }
   }
 
-  public struct TinkoffAcquiringDelegateOpenAttachScreenResponse {
-    var status: TinkoffAcquiringDelegateOpenAttachScreenStatus
+  public struct TinkoffAcquiringDelegateOpenAttachCardScreenResponse {
+    var status: TinkoffAcquiringDelegateOpenAttachCardScreenStatus
     var error: Error? = nil
     var cardId: String? = nil
   }
-  public enum TinkoffAcquiringDelegateOpenAttachScreenStatus: String {
+  public enum TinkoffAcquiringDelegateOpenAttachCardScreenStatus: String {
     case RESULT_OK = "RESULT_OK"
     case RESULT_ERROR = "RESULT_ERROR"
     case ERROR_NOT_INITIALIZED = "ERROR_NOT_INITIALIZED"
@@ -126,9 +126,9 @@ public class TinkoffAcquiringDelegate {
   public func openAttachCardScreen(
     tinkoffCustomerOptions: TinkoffCustomerOptions,
     tinkoffFeaturesOptions: TinkoffFeaturesOptions,
-    result: @escaping TinkoffResult<TinkoffAcquiringDelegateOpenAttachScreenResponse>
+    result: @escaping TinkoffResult<TinkoffAcquiringDelegateOpenAttachCardScreenResponse>
   ) {
-    if self.acquiringSdk == nil { result(TinkoffAcquiringDelegateOpenAttachScreenResponse(status: TinkoffAcquiringDelegateOpenAttachScreenStatus.ERROR_NOT_INITIALIZED)) }
+    if self.acquiringSdk == nil { result(TinkoffAcquiringDelegateOpenAttachCardScreenResponse(status: TinkoffAcquiringDelegateOpenAttachCardScreenStatus.ERROR_NOT_INITIALIZED)) }
 
     let viewConfiguration = AcquiringViewConfiguration()
     viewConfiguration.localizableInfo = AcquiringViewConfiguration.LocalizableInfo.init(lang: tinkoffFeaturesOptions.language)
@@ -139,14 +139,14 @@ public class TinkoffAcquiringDelegate {
       configuration: viewConfiguration,
       completeHandler: { (apiResult: Result<PaymentCard?, Error>) -> Void in
         do {
-          result(TinkoffAcquiringDelegateOpenAttachScreenResponse(
-            status: TinkoffAcquiringDelegateOpenAttachScreenStatus.RESULT_OK,
+          result(TinkoffAcquiringDelegateOpenAttachCardScreenResponse(
+            status: TinkoffAcquiringDelegateOpenAttachCardScreenStatus.RESULT_OK,
             cardId: try apiResult.get()?.cardId
           ))
         }
         catch {
-          result(TinkoffAcquiringDelegateOpenAttachScreenResponse(
-            status: TinkoffAcquiringDelegateOpenAttachScreenStatus.RESULT_ERROR,
+          result(TinkoffAcquiringDelegateOpenAttachCardScreenResponse(
+            status: TinkoffAcquiringDelegateOpenAttachCardScreenStatus.RESULT_ERROR,
             error: error
           ))
         }
@@ -238,7 +238,7 @@ public class TinkoffAcquiringDelegate {
 
     var applePayConfiguration = AcquiringUISDK.ApplePayConfiguration()
     applePayConfiguration.merchantIdentifier = tinkoffApplePayOptions.merchantIdentifier
-
+    
     self.acquiringSdk?.presentPaymentApplePay(
       on: self.viewController!,
       paymentData: paymentData,
@@ -267,6 +267,36 @@ public class TinkoffAcquiringDelegate {
         }
       }
     )
+  }
+    
+  public struct TinkoffAcquiringDelegateOpenSavedCardsScreenResponse {
+    var status: TinkoffAcquiringDelegateOpenSavedCardsScreenStatus
+    var error: Error? = nil
+  }
+  public enum TinkoffAcquiringDelegateOpenSavedCardsScreenStatus: String {
+    case RESULT_OK = "RESULT_OK"
+    case RESULT_ERROR = "RESULT_ERROR"
+    case ERROR_NOT_INITIALIZED = "ERROR_NOT_INITIALIZED"
+  }
+  public func openSavedCardsScreen(
+    tinkoffCustomerOptions: TinkoffCustomerOptions,
+    tinkoffFeaturesOptions: TinkoffFeaturesOptions,
+    result: @escaping TinkoffResult<TinkoffAcquiringDelegateOpenSavedCardsScreenResponse>
+  ) {
+    if self.acquiringSdk == nil { result(TinkoffAcquiringDelegateOpenSavedCardsScreenResponse(status: TinkoffAcquiringDelegateOpenSavedCardsScreenStatus.ERROR_NOT_INITIALIZED)) }
+
+    let viewConfiguration = AcquiringViewConfiguration()
+    viewConfiguration.localizableInfo = AcquiringViewConfiguration.LocalizableInfo.init(lang: tinkoffFeaturesOptions.language)
+    //presentPaymentQRCollector
+    self.acquiringSdk?.presentCardList(
+      on: self.viewController!,
+      customerKey: tinkoffCustomerOptions.customerId,
+      configuration: viewConfiguration
+    )
+    
+    result(TinkoffAcquiringDelegateOpenSavedCardsScreenResponse(
+      status: TinkoffAcquiringDelegateOpenSavedCardsScreenStatus.RESULT_OK
+    ))
   }
     
   private static let amountFormatter = NumberFormatter()
@@ -381,6 +411,21 @@ public class SwiftTinkoffAcquiringSdkPlugin: NSObject, FlutterPlugin {
             "error": (response.error as NSError?)?.description,
             "cardId": response.cardId as Any?,
             "paymentId": response.paymentId
+          ])
+        }
+      )
+    case "openSavedCardsScreen":
+      guard let customerId: String = arguments["customerId"] as? String else {  result(FlutterError(code: TINKOFF_COMMON_STATUS_FATAL_ERROR, message: "customerId is required in openSavedCardsScreen method", details: nil)); return }
+      let email: String? = arguments["email"] as? String
+      guard let language: String = arguments["language"] as? String else { result(FlutterError(code: TINKOFF_COMMON_STATUS_FATAL_ERROR, message: "language is required in openSavedCardsScreen method", details: nil)); return }
+
+      delegate.openSavedCardsScreen(
+        tinkoffCustomerOptions: TinkoffCustomerOptions(customerId: customerId, email: email),
+        tinkoffFeaturesOptions: TinkoffFeaturesOptions(language: language),
+        result: { (response) -> Void in
+          result([
+            "status": response.status.rawValue,
+            "error": (response.error as NSError?)?.description
           ])
         }
       )
