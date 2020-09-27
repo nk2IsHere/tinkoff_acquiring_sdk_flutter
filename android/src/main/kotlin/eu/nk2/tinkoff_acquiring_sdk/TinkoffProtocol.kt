@@ -29,7 +29,7 @@ fun MethodCall.toTinkoffOrderOptions() = TinkoffOrderOptions(
     orderId = this.argument("orderId") ?: error("orderId is required in openPaymentScreen method"),
     title = this.argument("title") ?: error("title is required in openPaymentScreen method"),
     description = this.argument("description") ?: error("description is required in openPaymentScreen method"),
-    money = Money.Companion.ofRubles(this.argument<Double>("money") ?: error("money is required in openPaymentScreen method")),
+    money = Money.ofRubles(this.argument<Double>("money") ?: error("money is required in openPaymentScreen method")),
     recurrentPayment = this.argument("recurrentPayment") ?: false
 )
 
