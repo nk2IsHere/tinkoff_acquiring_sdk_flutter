@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:tinkoff_acquiring_sdk/tinkoff_acquiring_sdk.dart';
@@ -24,7 +26,7 @@ class _MyAppState extends State<MyApp> {
         "9Na2kRoPYBHePGzGgYmtKgKMNs+6rdv5v9VB3k7CS/lSIH4p74/OPRjyryo6Q7Nb\n" +
         "L+evz0+s60Qz5gbBRGfqCA57lUiB3hfXQZq5/q1YkABOHf9cR6Ov5nTRSOnjORgP\n" +
         "jwIDAQAB",
-    enableGooglePay: true
+    enableGooglePay: Platform.isAndroid
   );
 
   @override
@@ -82,7 +84,7 @@ class _MyAppState extends State<MyApp> {
             RaisedButton(
               onPressed: () {
                 tinkoffAcquiringSdk.openPaymentScreen(
-                  orderId: "test-order-id",
+                  orderId: "test-order-id-1",
                   title: "Test order",
                   description: "description for order",
                   money: 1000.0,
@@ -99,7 +101,7 @@ class _MyAppState extends State<MyApp> {
             RaisedButton(
                 onPressed: () {
                   tinkoffAcquiringSdk.openGooglePay(
-                      orderId: "test-order-id",
+                      orderId: "test-order-id-1",
                       title: "Test order",
                       description: "description for order",
                       money: 1000.0,
@@ -112,6 +114,21 @@ class _MyAppState extends State<MyApp> {
                   );
                 },
                 child: Text("open google pay")
+            ),
+            RaisedButton(
+                onPressed: () {
+                  tinkoffAcquiringSdk.openApplePay(
+                      orderId: "test-order-id-1",
+                      title: "Test order",
+                      description: "description for order",
+                      money: 1000,
+                      customerId: "test-id",
+                      checkType: TinkoffCheckType.HOLD,
+                      language: TinkoffLanguage.RU,
+                      merchantIdentifier: "merchant.tcsbank.ApplePayTestMerchantId"
+                  );
+                },
+                child: Text("open apple pay")
             ),
           ],
         ),

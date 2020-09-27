@@ -23,6 +23,7 @@ TinkoffAcquiringInitializationResponse
   return TinkoffAcquiringInitializationResponse(
     status: _$enumDecodeNullable(
         _$TinkoffAcquiringInitializationStatusEnumMap, json['status']),
+    error: json['error'] as String,
   );
 }
 
@@ -30,6 +31,7 @@ Map<String, dynamic> _$TinkoffAcquiringInitializationResponseToJson(
         TinkoffAcquiringInitializationResponse instance) =>
     <String, dynamic>{
       'status': _$TinkoffAcquiringInitializationStatusEnumMap[instance.status],
+      'error': instance.error,
     };
 
 T _$enumDecode<T>(
@@ -67,6 +69,7 @@ T _$enumDecodeNullable<T>(
 const _$TinkoffAcquiringInitializationStatusEnumMap = {
   TinkoffAcquiringInitializationStatus.NOT_INITIALIZED: 'NOT_INITIALIZED',
   TinkoffAcquiringInitializationStatus.RESULT_OK: 'RESULT_OK',
+  TinkoffAcquiringInitializationStatus.RESULT_ERROR: 'RESULT_ERROR',
   TinkoffAcquiringInitializationStatus.GOOGLE_PAY_NOT_AVAILABLE:
       'GOOGLE_PAY_NOT_AVAILABLE',
   TinkoffAcquiringInitializationStatus.FLUTTER_NOT_INITIALIZED:

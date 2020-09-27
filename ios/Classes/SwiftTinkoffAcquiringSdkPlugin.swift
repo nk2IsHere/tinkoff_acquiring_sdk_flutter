@@ -40,24 +40,34 @@ public class TinkoffAcquiringDelegate {
 
   public typealias TinkoffResult<T> = (T) -> Void
 
+  private let viewConfigurationLanguageData: [String: [String: String]] = [ // Because fuck xcode localization and flutter integration, thats why
+    "ru": [
+      "text.totalAmount": "на сумму",
+      "placeholder.email": "Отправить квитанцию по адресу"
+    ],
+    "en": [
+      "text.totalAmount": "with amount",
+      "placeholder.email": "Send receipt to email"
+    ]
+  ]
   private func initializeViewConfiguration(
     title: String,
     description: String,
     money: NSNumber,
     email: String?,
     enablePaySBP: Bool,
-    language: String?
+    language: String
   ) -> AcquiringViewConfiguration {
     let viewConfiguration = AcquiringViewConfiguration.init()
     viewConfiguration.fields = []
     viewConfiguration.viewTitle = title
     let title = NSAttributedString.init(string: title, attributes: [.font: UIFont.boldSystemFont(ofSize: 22)])
     let amountString = TinkoffAcquiringDelegate.formatAmount(NSDecimalNumber.init(decimal: money.decimalValue))
-    let amountTitle = NSAttributedString.init(string: "\(NSLocalizedString("text.totalAmount", comment: "на сумму")) \(amountString)", attributes: [.font : UIFont.systemFont(ofSize: 17)])
+    let amountTitle = NSAttributedString.init(string: "\(viewConfigurationLanguageData[language]?["text.totalAmount"] ?? "") \(amountString)", attributes: [.font : UIFont.systemFont(ofSize: 17)])
     viewConfiguration.fields.append(AcquiringViewConfiguration.InfoFields.amount(title: title, amount: amountTitle))
     viewConfiguration.fields.append(AcquiringViewConfiguration.InfoFields.detail(title: NSAttributedString(string: description, attributes: [.font : UIFont.systemFont(ofSize: 17)])))
 
-    viewConfiguration.fields.append(AcquiringViewConfiguration.InfoFields.email(value: email, placeholder: NSLocalizedString("placeholder.email", comment: "Отправить квитанцию по адресу")))
+    viewConfiguration.fields.append(AcquiringViewConfiguration.InfoFields.email(value: email, placeholder: viewConfigurationLanguageData[language]?["placeholder.email"] ?? ""))
     if enablePaySBP { viewConfiguration.fields.append(AcquiringViewConfiguration.InfoFields.buttonPaySPB) }
 
     viewConfiguration.localizableInfo = AcquiringViewConfiguration.LocalizableInfo.init(lang: language)
@@ -67,9 +77,11 @@ public class TinkoffAcquiringDelegate {
 
   public struct TinkoffAcquiringDelegateInitializeResponse {
     var status: TinkoffAcquiringDelegateInitializeStatus
+    var error: Error? = nil
   }
   public enum TinkoffAcquiringDelegateInitializeStatus: String {
     case RESULT_OK = "RESULT_OK"
+    case RESULT_ERROR = "RESULT_ERROR"
     case FLUTTER_NOT_INITIALIZED = "FLUTTER_NOT_INITIALIZED"
     case PLUGIN_ALREADY_INITIALIZED = "PLUGIN_ALREADY_INITIALIZED"
   }
@@ -84,12 +96,21 @@ public class TinkoffAcquiringDelegate {
     if self.acquiringSdk != nil { result(TinkoffAcquiringDelegateInitializeResponse(status: TinkoffAcquiringDelegateInitializeStatus.PLUGIN_ALREADY_INITIALIZED)) }
 
     let acquiringEnvironment = enableDebug ? AcquiringSdkEnvironment.test : AcquiringSdkEnvironment.prod
-    self.acquiringSdk = try! AcquiringUISDK(configuration: AcquiringSdkConfiguration(
+    
+    do {
+      self.acquiringSdk = try AcquiringUISDK(configuration: AcquiringSdkConfiguration(
         credential: AcquiringSdkCredential(terminalKey: terminalKey, password: password, publicKey: publicKey),
         server: acquiringEnvironment
-    ))
+      ))
 
-    result(TinkoffAcquiringDelegateInitializeResponse(status: TinkoffAcquiringDelegateInitializeStatus.RESULT_OK))
+      result(TinkoffAcquiringDelegateInitializeResponse(status: TinkoffAcquiringDelegateInitializeStatus.RESULT_OK))
+    }
+    catch {
+      result(TinkoffAcquiringDelegateInitializeResponse(
+        status: TinkoffAcquiringDelegateInitializeStatus.RESULT_ERROR,
+        error: error
+      ))
+    }
   }
 
   public struct TinkoffAcquiringDelegateOpenAttachScreenResponse {
@@ -266,13 +287,13 @@ public class TinkoffAcquiringDelegate {
 public class SwiftTinkoffAcquiringSdkPlugin: NSObject, FlutterPlugin {
   var delegate: TinkoffAcquiringDelegate
        
-  init(pluginRegistrar: FlutterPluginRegistrar, uiViewController: UIViewController) {
+  init(pluginRegistrar: FlutterPluginRegistrar, uiViewController: UIViewController?) {
     delegate = TinkoffAcquiringDelegate(registrar: pluginRegistrar, uiViewController: uiViewController)
   }
     
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "eu.nk2/tinkoff_acquiring_sdk", binaryMessenger: registrar.messenger())
-    let instance = SwiftTinkoffAcquiringSdkPlugin(pluginRegistrar: registrar, uiViewController: (UIApplication.shared.delegate?.window??.rootViewController)!)
+    let instance = SwiftTinkoffAcquiringSdkPlugin(pluginRegistrar: registrar, uiViewController: UIApplication.shared.delegate?.window??.rootViewController)
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
@@ -293,7 +314,8 @@ public class SwiftTinkoffAcquiringSdkPlugin: NSObject, FlutterPlugin {
         publicKey: publicKey,
         result: { (response) -> Void in
           result([
-            "status": response.status.rawValue
+            "status": response.status.rawValue,
+            "error": (response.error as NSError?)?.description,
           ])
         }
       )

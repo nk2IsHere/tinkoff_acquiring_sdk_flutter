@@ -49,13 +49,18 @@ class TinkoffAcquiringSdk {
       'enableDebug': this.enableDebug,
       'terminalKey': this.terminalKey,
       'password': this.password,
-      'publicKey': this.publicKey,
+      'publicKey': this.publicKey.replaceAll('\n', ''), //iOS shits about it
       'enableGooglePay': this.enableGooglePay,
       'requireAddress': this.requireAddress,
       'requirePhone': this.requirePhone,
     });
 
     final TinkoffAcquiringInitializationResponse status = TinkoffAcquiringInitializationResponse.fromJson(response.cast<String, dynamic>());
+
+    if(status.status == TinkoffAcquiringInitializationStatus.RESULT_ERROR) {
+      _status = TinkoffAcquiringSdkStatus.INITIALIZATION_ERROR;
+      throw TinkoffError(message: status.error);
+    }
 
     if(status.status == TinkoffAcquiringInitializationStatus.FLUTTER_NOT_INITIALIZED) {
       _status = TinkoffAcquiringSdkStatus.INITIALIZATION_ERROR;
@@ -90,7 +95,7 @@ class TinkoffAcquiringSdk {
       'enableSecureKeyboard': enableSecureKeyboard,
       'enableCameraCardScanner': enableCameraCardScanner,
       'darkThemeMode': mapEnumToString(darkThemeMode),
-      'language': mapEnumToString(language)
+      'language': mapLanguageToPlatform(language)
     });
 
     final TinkoffCommonResponse status = TinkoffCommonResponse.fromJson(response.cast<String, dynamic>());
@@ -141,7 +146,7 @@ class TinkoffAcquiringSdk {
       'enableSecureKeyboard': enableSecureKeyboard,
       'enableCameraCardScanner': enableCameraCardScanner,
       'darkThemeMode': mapEnumToString(darkThemeMode),
-      'language': mapEnumToString(language)
+      'language': mapLanguageToPlatform(language)
     });
 
     final TinkoffCommonResponse status = TinkoffCommonResponse.fromJson(response.cast<String, dynamic>());
@@ -173,6 +178,7 @@ class TinkoffAcquiringSdk {
     TinkoffLanguage language
   }) async {
     assert(_status == TinkoffAcquiringSdkStatus.INITIALIZED);
+    assert(Platform.isAndroid);
     assert(orderId != null);
     assert(title != null);
     assert(description != null);
@@ -192,7 +198,56 @@ class TinkoffAcquiringSdk {
       'enableSecureKeyboard': enableSecureKeyboard,
       'enableCameraCardScanner': enableCameraCardScanner,
       'darkThemeMode': mapEnumToString(darkThemeMode),
-      'language': mapEnumToString(language)
+      'language': mapLanguageToPlatform(language)
+    });
+
+    final TinkoffCommonResponse status = TinkoffCommonResponse.fromJson(response.cast<String, dynamic>());
+
+    if(status.status == TinkoffAcquiringCommonStatus.ERROR_NO_ACTIVITY)
+      throw TinkoffError(message: 'Plugin is running without activity.');
+
+    if(status.status == TinkoffAcquiringCommonStatus.ERROR_NOT_INITIALIZED)
+      throw TinkoffError(message: 'Plugin is not initialized.');
+
+    if(status.error != null)
+      throw TinkoffError(message: status.error);
+
+    return status;
+  }
+
+  Future<TinkoffCommonResponse> openApplePay({
+    String orderId,
+    String title,
+    String description,
+    double money,
+    bool recurrentPayment,
+    String customerId,
+    TinkoffCheckType checkType,
+    String email,
+    TinkoffLanguage language,
+    String merchantIdentifier
+  }) async {
+    assert(_status == TinkoffAcquiringSdkStatus.INITIALIZED);
+    assert(Platform.isIOS);
+    assert(orderId != null);
+    assert(title != null);
+    assert(description != null);
+    assert(money != null);
+    assert(customerId != null);
+    assert(language != null);
+    assert(merchantIdentifier != null);
+
+    final Map<dynamic, dynamic> response = await _channel.invokeMethod('openApplePay', {
+      'orderId': orderId,
+      'title': title,
+      'description': description,
+      'money': money,
+      'recurrentPayment': recurrentPayment,
+      'customerId': customerId,
+      'checkType': checkType != null? mapEnumToString(checkType) : null,
+      'email': email,
+      'language': mapLanguageToPlatform(language),
+      'merchantIdentifier': merchantIdentifier
     });
 
     final TinkoffCommonResponse status = TinkoffCommonResponse.fromJson(response.cast<String, dynamic>());
@@ -222,7 +277,7 @@ class TinkoffAcquiringSdk {
       'enableSecureKeyboard': enableSecureKeyboard,
       'enableCameraCardScanner': enableCameraCardScanner,
       'darkThemeMode': mapEnumToString(darkThemeMode),
-      'language': mapEnumToString(language)
+      'language': mapLanguageToPlatform(language)
     });
 
     final TinkoffCommonResponse status = TinkoffCommonResponse.fromJson(response.cast<String, dynamic>());
@@ -259,7 +314,7 @@ class TinkoffAcquiringSdk {
       'enableSecureKeyboard': enableSecureKeyboard,
       'enableCameraCardScanner': enableCameraCardScanner,
       'darkThemeMode': mapEnumToString(darkThemeMode),
-      'language': mapEnumToString(language)
+      'language': mapLanguageToPlatform(language)
     });
 
     final TinkoffCommonResponse status = TinkoffCommonResponse.fromJson(response.cast<String, dynamic>());

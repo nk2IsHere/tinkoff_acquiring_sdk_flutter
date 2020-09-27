@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'tinkoff_acquiring_models.g.dart';
@@ -32,6 +34,7 @@ class TinkoffError extends Error {
 enum TinkoffAcquiringInitializationStatus {
   NOT_INITIALIZED,
   RESULT_OK,
+  RESULT_ERROR,
   GOOGLE_PAY_NOT_AVAILABLE,
   FLUTTER_NOT_INITIALIZED,
   PLUGIN_ALREADY_INITIALIZED
@@ -40,25 +43,29 @@ enum TinkoffAcquiringInitializationStatus {
 @JsonSerializable()
 class TinkoffAcquiringInitializationResponse {
   final TinkoffAcquiringInitializationStatus status;
+  final String error;
 
   TinkoffAcquiringInitializationResponse({
-    this.status
+    this.status,
+    this.error
   });
+
 
   @override
   String toString() {
-    return 'TinkoffAcquiringInitializationResponse{status: $status}';
+    return 'TinkoffAcquiringInitializationResponse{status: $status, error: $error}';
   }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is TinkoffAcquiringInitializationResponse &&
-              runtimeType == other.runtimeType &&
-              status == other.status;
+      other is TinkoffAcquiringInitializationResponse &&
+          runtimeType == other.runtimeType &&
+          status == other.status &&
+          error == other.error;
 
   @override
-  int get hashCode => status.hashCode;
+  int get hashCode => status.hashCode ^ error.hashCode;
 
   factory TinkoffAcquiringInitializationResponse.fromJson(Map<String, dynamic> json) => _$TinkoffAcquiringInitializationResponseFromJson(json);
   Map<String, dynamic> toJson() => _$TinkoffAcquiringInitializationResponseToJson(this);
@@ -130,3 +137,6 @@ enum TinkoffLanguage {
 }
 
 String mapEnumToString(dynamic value) => value.toString().split('.').last;
+String mapLanguageToPlatform(TinkoffLanguage value) => Platform.isIOS?
+  mapEnumToString(value).toLowerCase()
+  : mapEnumToString(value);
