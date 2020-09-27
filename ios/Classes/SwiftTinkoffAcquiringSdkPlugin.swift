@@ -298,6 +298,31 @@ public class TinkoffAcquiringDelegate {
       status: TinkoffAcquiringDelegateOpenSavedCardsScreenStatus.RESULT_OK
     ))
   }
+  
+  public struct TinkoffAcquiringDelegateOpenPaymentQrScreenResponse {
+    var status: TinkoffAcquiringDelegateOpenPaymentQrScreenStatus
+    var error: Error? = nil
+  }
+  public enum TinkoffAcquiringDelegateOpenPaymentQrScreenStatus: String {
+    case RESULT_OK = "RESULT_OK"
+    case RESULT_ERROR = "RESULT_ERROR"
+    case ERROR_NOT_INITIALIZED = "ERROR_NOT_INITIALIZED"
+  }
+  public func openPaymentQrScreen(
+    tinkoffFeaturesOptions: TinkoffFeaturesOptions,
+    result: @escaping TinkoffResult<TinkoffAcquiringDelegateOpenPaymentQrScreenResponse>
+  ) {
+    if self.acquiringSdk == nil { result(TinkoffAcquiringDelegateOpenPaymentQrScreenResponse(status: TinkoffAcquiringDelegateOpenPaymentQrScreenStatus.ERROR_NOT_INITIALIZED)) }
+
+    let viewConfiguration = AcquiringViewConfiguration()
+    viewConfiguration.localizableInfo = AcquiringViewConfiguration.LocalizableInfo.init(lang: tinkoffFeaturesOptions.language)
+    
+    self.acquiringSdk?.presentPaymentQRCollector(on: self.viewController!, configuration: viewConfiguration)
+    
+    result(TinkoffAcquiringDelegateOpenPaymentQrScreenResponse(
+      status: TinkoffAcquiringDelegateOpenPaymentQrScreenStatus.RESULT_OK
+    ))
+  }
     
   private static let amountFormatter = NumberFormatter()
   private static func formatAmount(_ value: NSDecimalNumber, fractionDigits: Int = 2, currency: String = "₽") -> String {
@@ -429,8 +454,20 @@ public class SwiftTinkoffAcquiringSdkPlugin: NSObject, FlutterPlugin {
           ])
         }
       )
-      default:
-        result(FlutterMethodNotImplemented)
+    case "openPaymentQrScreen":
+      guard let language: String = arguments["language"] as? String else { result(FlutterError(code: TINKOFF_COMMON_STATUS_FATAL_ERROR, message: "language is required in openPaymentQrScreen method", details: nil)); return }
+
+      delegate.openPaymentQrScreen(
+        tinkoffFeaturesOptions: TinkoffFeaturesOptions(language: language),
+        result: { (response) -> Void in
+          result([
+            "status": response.status.rawValue,
+            "error": (response.error as NSError?)?.description
+          ])
+        }
+      )
+    default:
+      result(FlutterMethodNotImplemented)
     }
   }
 }
