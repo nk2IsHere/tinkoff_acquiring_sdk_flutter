@@ -1,18 +1,18 @@
 PODS:
   - Flutter (1.0.0)
-  - tinkoff_acquiring_sdk (0.0.1):
+  - tinkoff_acquiring_sdk (1.0.1):
     - Flutter
     - TinkoffASDKCore
     - TinkoffASDKUI
-  - TinkoffASDKCore (2.0.5)
-  - TinkoffASDKUI (2.0.5):
+  - TinkoffASDKCore (2.1.1)
+  - TinkoffASDKUI (2.1.1):
     - TinkoffASDKCore
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - tinkoff_acquiring_sdk (from `.symlinks/plugins/tinkoff_acquiring_sdk/ios`)
-  - TinkoffASDKCore (from `https://github.com/nk2ishere/AcquiringSdk_IOS.git`, tag `2.0.5`)
-  - TinkoffASDKUI (from `https://github.com/nk2ishere/AcquiringSdk_IOS.git`, tag `2.0.5`)
+  - TinkoffASDKCore (from `https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git`, tag `2.1.1`)
+  - TinkoffASDKUI (from `https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git`, tag `2.1.1`)
 
 EXTERNAL SOURCES:
   Flutter:
@@ -20,26 +20,26 @@ EXTERNAL SOURCES:
   tinkoff_acquiring_sdk:
     :path: ".symlinks/plugins/tinkoff_acquiring_sdk/ios"
   TinkoffASDKCore:
-    :git: https://github.com/nk2ishere/AcquiringSdk_IOS.git
-    :tag: 2.0.5
+    :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
+    :tag: 2.1.1
   TinkoffASDKUI:
-    :git: https://github.com/nk2ishere/AcquiringSdk_IOS.git
-    :tag: 2.0.5
+    :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
+    :tag: 2.1.1
 
 CHECKOUT OPTIONS:
   TinkoffASDKCore:
-    :git: https://github.com/nk2ishere/AcquiringSdk_IOS.git
-    :tag: 2.0.5
+    :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
+    :tag: 2.1.1
   TinkoffASDKUI:
-    :git: https://github.com/nk2ishere/AcquiringSdk_IOS.git
-    :tag: 2.0.5
+    :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
+    :tag: 2.1.1
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  tinkoff_acquiring_sdk: 607599b9d557bc9689ec7fc96e0445c3b86aa1eb
-  TinkoffASDKCore: e2a73831d03aad2a233c45259f5b8450f015a8e6
-  TinkoffASDKUI: 6c43e5f671256f9991dc4c0b9a88bbdf04998b58
+  tinkoff_acquiring_sdk: f2527dc9890a1cf8012f8f90a0ac9de02a9f58d3
+  TinkoffASDKCore: b91b1f728a06a339e75ff85ff36739db2cc39c3e
+  TinkoffASDKUI: 8093560c20ff017de76aedbc00d6b64aa14b9153
 
-PODFILE CHECKSUM: 0134a977236a664302d9143e1a95fa5fec6fedad
+PODFILE CHECKSUM: c41af130fc8884c8fa82df7c3e4eb8ec481192ec
 
 COCOAPODS: 1.9.3
