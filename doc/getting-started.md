@@ -1,7 +1,7 @@
 # Tinkoff Acquiring SDK for Flutter
 
 Tinkoff Acquiring SDK bindings for Flutter.\
-Two platforms, one package\
+Two platforms, one package
 
 <img src="https://raw.githubusercontent.com/nk2ishere/tinkoff_acquiring_sdk_flutter/master/doc/img/overview.png" height="500"/>
 
