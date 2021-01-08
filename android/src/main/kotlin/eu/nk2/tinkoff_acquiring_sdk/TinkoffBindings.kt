@@ -93,7 +93,8 @@ private val tinkoffOpenGooglePay: MethodChannelFunction = safe { call, result, d
             "status" to methodCallResult.status.name,
             "error" to methodCallResult.error?.message,
             "cardId" to methodCallResult.cardId,
-            "paymentId" to methodCallResult.paymentId
+            "paymentId" to methodCallResult.paymentId,
+            "rebillId" to methodCallResult.rebillId
         )) }
     }
 }

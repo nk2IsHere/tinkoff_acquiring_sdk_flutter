@@ -5,23 +5,11 @@ import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.wallet.WalletConstants
 import ru.tinkoff.acquiring.sdk.AcquiringSdk
 import ru.tinkoff.acquiring.sdk.TinkoffAcquiring
-import ru.tinkoff.acquiring.sdk.localization.AsdkSource
-import ru.tinkoff.acquiring.sdk.localization.Language
-import ru.tinkoff.acquiring.sdk.localization.LocalizationSource
 import ru.tinkoff.acquiring.sdk.models.AsdkState
-import ru.tinkoff.acquiring.sdk.models.DarkThemeMode
 import ru.tinkoff.acquiring.sdk.models.DefaultState
 import ru.tinkoff.acquiring.sdk.models.GooglePayParams
-import ru.tinkoff.acquiring.sdk.models.enums.CheckType
-import ru.tinkoff.acquiring.sdk.models.options.FeaturesOptions
-import ru.tinkoff.acquiring.sdk.models.options.screen.AttachCardOptions
-import ru.tinkoff.acquiring.sdk.models.options.screen.PaymentOptions
-import ru.tinkoff.acquiring.sdk.models.options.screen.SavedCardsOptions
 import ru.tinkoff.acquiring.sdk.payment.PaymentListenerAdapter
-import ru.tinkoff.acquiring.sdk.payment.PaymentProcess
 import ru.tinkoff.acquiring.sdk.utils.GooglePayHelper
-import ru.tinkoff.acquiring.sdk.utils.Money
-import ru.tinkoff.cardio.CameraCardIOScanner
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -158,6 +146,7 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
         val error: Throwable? = null,
         val cardId: String? = null,
         val paymentId: Long? = null,
+        val rebillId: String? = null,
         val paymentState: AsdkState? = null
     )
     enum class TinkoffAcquiringDelegateOpenGooglePayStatus { RESULT_OK, RESULT_CANCELLED, RESULT_REOPEN_UI, RESULT_ERROR, ERROR_NOT_INITIALIZED, ERROR_NO_ACTIVITY }
@@ -185,10 +174,11 @@ class TinkoffAcquiringSdkDelegate(private val activityDelegate: ActivityDelegate
         return suspendCoroutine { sink ->
             tinkoffAcquiring!!.initPayment(googlePayToken,  makeTinkoffPaymentOptions(tinkoffOrderOptions, tinkoffCustomerOptions, tinkoffFeaturesOptions))
                 .subscribe(object: PaymentListenerAdapter() {
-                    override fun onSuccess(paymentId: Long, cardId: String?) =
+                    override fun onSuccess(paymentId: Long, cardId: String?, rebillId: String?) =
                         sink.resume(TinkoffAcquiringDelegateOpenGooglePayResponse(
                             status = TinkoffAcquiringDelegateOpenGooglePayStatus.RESULT_OK,
                             paymentId = paymentId,
+                            rebillId = rebillId,
                             cardId = cardId
                         ))
 

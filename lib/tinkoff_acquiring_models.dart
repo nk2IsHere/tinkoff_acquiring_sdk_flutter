@@ -1,16 +1,13 @@
-import 'dart:io';
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'tinkoff_acquiring_models.g.dart';
 
+/// Common data structure used when SDK errors out
 @JsonSerializable()
 class TinkoffError extends Error {
   final String message;
 
-  TinkoffError({
-    this.message
-  });
+  TinkoffError({this.message});
 
   @override
   String toString() {
@@ -20,17 +17,19 @@ class TinkoffError extends Error {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is TinkoffError &&
-              runtimeType == other.runtimeType &&
-              message == other.message;
+      other is TinkoffError &&
+          runtimeType == other.runtimeType &&
+          message == other.message;
 
   @override
   int get hashCode => message.hashCode;
 
-  factory TinkoffError.fromJson(Map<String, dynamic> json) => _$TinkoffErrorFromJson(json);
+  factory TinkoffError.fromJson(Map<String, dynamic> json) =>
+      _$TinkoffErrorFromJson(json);
   Map<String, dynamic> toJson() => _$TinkoffErrorToJson(this);
 }
 
+/// Internal.
 enum TinkoffAcquiringInitializationStatus {
   NOT_INITIALIZED,
   RESULT_OK,
@@ -40,16 +39,13 @@ enum TinkoffAcquiringInitializationStatus {
   PLUGIN_ALREADY_INITIALIZED
 }
 
+/// Internal.
 @JsonSerializable()
 class TinkoffAcquiringInitializationResponse {
   final TinkoffAcquiringInitializationStatus status;
   final String error;
 
-  TinkoffAcquiringInitializationResponse({
-    this.status,
-    this.error
-  });
-
+  TinkoffAcquiringInitializationResponse({this.status, this.error});
 
   @override
   String toString() {
@@ -67,10 +63,14 @@ class TinkoffAcquiringInitializationResponse {
   @override
   int get hashCode => status.hashCode ^ error.hashCode;
 
-  factory TinkoffAcquiringInitializationResponse.fromJson(Map<String, dynamic> json) => _$TinkoffAcquiringInitializationResponseFromJson(json);
-  Map<String, dynamic> toJson() => _$TinkoffAcquiringInitializationResponseToJson(this);
+  factory TinkoffAcquiringInitializationResponse.fromJson(
+          Map<String, dynamic> json) =>
+      _$TinkoffAcquiringInitializationResponseFromJson(json);
+  Map<String, dynamic> toJson() =>
+      _$TinkoffAcquiringInitializationResponseToJson(this);
 }
 
+/// Common enum with generalized SDK method status responses
 enum TinkoffAcquiringCommonStatus {
   RESULT_OK,
   RESULT_CANCELLED,
@@ -80,24 +80,21 @@ enum TinkoffAcquiringCommonStatus {
   ERROR_NO_ACTIVITY
 }
 
+/// Common structure with generalized SDK method data responses
 @JsonSerializable()
 class TinkoffCommonResponse {
   final TinkoffAcquiringCommonStatus status;
   final String cardId;
   final int paymentId;
+  final String rebillId;
   final String error;
 
-  TinkoffCommonResponse({
-    this.status,
-    this.cardId,
-    this.paymentId,
-    this.error
-  });
-
+  TinkoffCommonResponse(
+      {this.status, this.cardId, this.paymentId, this.rebillId, this.error});
 
   @override
   String toString() {
-    return 'TinkoffCommonResponse{status: $status, cardId: $cardId, paymentId: $paymentId, error: $error}';
+    return 'TinkoffCommonResponse{status: $status, cardId: $cardId, paymentId: $paymentId, rebillId: $rebillId, error: $error}';
   }
 
   @override
@@ -108,35 +105,27 @@ class TinkoffCommonResponse {
           status == other.status &&
           cardId == other.cardId &&
           paymentId == other.paymentId &&
+          rebillId == other.rebillId &&
           error == other.error;
 
   @override
   int get hashCode =>
-      status.hashCode ^ cardId.hashCode ^ paymentId.hashCode ^ error.hashCode;
+      status.hashCode ^
+      cardId.hashCode ^
+      paymentId.hashCode ^
+      rebillId.hashCode ^
+      error.hashCode;
 
-  factory TinkoffCommonResponse.fromJson(Map<String, dynamic> json) => _$TinkoffCommonResponseFromJson(json);
+  factory TinkoffCommonResponse.fromJson(Map<String, dynamic> json) =>
+      _$TinkoffCommonResponseFromJson(json);
   Map<String, dynamic> toJson() => _$TinkoffCommonResponseToJson(this);
 }
 
-enum TinkoffCheckType {
-  NO,
-  HOLD,
-  THREE_DS,
-  THREE_DS_HOLD
-}
+/// Common enum used to select card check type
+enum TinkoffCheckType { NO, HOLD, THREE_DS, THREE_DS_HOLD }
 
-enum TinkoffDarkThemeMode {
-  DISABLED,
-  ENABLED,
-  AUTO
-}
+/// Common enum used to select dark mode
+enum TinkoffDarkThemeMode { DISABLED, ENABLED, AUTO }
 
-enum TinkoffLanguage {
-  RU,
-  EN
-}
-
-String mapEnumToString(dynamic value) => value.toString().split('.').last;
-String mapLanguageToPlatform(TinkoffLanguage value) => Platform.isIOS?
-  mapEnumToString(value).toLowerCase()
-  : mapEnumToString(value);
+/// Common enum used to select language
+enum TinkoffLanguage { RU, EN }

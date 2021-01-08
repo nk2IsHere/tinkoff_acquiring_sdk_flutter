@@ -1,18 +1,18 @@
 PODS:
   - Flutter (1.0.0)
-  - tinkoff_acquiring_sdk (1.0.1):
+  - tinkoff_acquiring_sdk (1.0.2):
     - Flutter
     - TinkoffASDKCore
     - TinkoffASDKUI
-  - TinkoffASDKCore (2.1.1)
-  - TinkoffASDKUI (2.1.1):
+  - TinkoffASDKCore (2.1.4)
+  - TinkoffASDKUI (2.1.4):
     - TinkoffASDKCore
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - tinkoff_acquiring_sdk (from `.symlinks/plugins/tinkoff_acquiring_sdk/ios`)
-  - TinkoffASDKCore (from `https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git`, tag `2.1.1`)
-  - TinkoffASDKUI (from `https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git`, tag `2.1.1`)
+  - TinkoffASDKCore (from `https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git`, tag `2.1.4`)
+  - TinkoffASDKUI (from `https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git`, tag `2.1.4`)
 
 EXTERNAL SOURCES:
   Flutter:
@@ -21,25 +21,25 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/tinkoff_acquiring_sdk/ios"
   TinkoffASDKCore:
     :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
-    :tag: 2.1.1
+    :tag: 2.1.4
   TinkoffASDKUI:
     :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
-    :tag: 2.1.1
+    :tag: 2.1.4
 
 CHECKOUT OPTIONS:
   TinkoffASDKCore:
     :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
-    :tag: 2.1.1
+    :tag: 2.1.4
   TinkoffASDKUI:
     :git: https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git
-    :tag: 2.1.1
+    :tag: 2.1.4
 
 SPEC CHECKSUMS:
-  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  tinkoff_acquiring_sdk: f2527dc9890a1cf8012f8f90a0ac9de02a9f58d3
-  TinkoffASDKCore: b91b1f728a06a339e75ff85ff36739db2cc39c3e
-  TinkoffASDKUI: 8093560c20ff017de76aedbc00d6b64aa14b9153
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  tinkoff_acquiring_sdk: 3503b8076c6b867bd49172f7aabb9f101db8df5a
+  TinkoffASDKCore: 739592f2a3e1c1f61ccd135e696618659a700ced
+  TinkoffASDKUI: a712f7650de730e085359ab5ae772931316b8650
 
-PODFILE CHECKSUM: c41af130fc8884c8fa82df7c3e4eb8ec481192ec
+PODFILE CHECKSUM: 2029536a1399091725a40f9b3dcb0d2544fa63f4
 
 COCOAPODS: 1.9.3

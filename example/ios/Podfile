@@ -40,5 +40,5 @@ post_install do |installer|
   end
 end
 
-pod 'TinkoffASDKCore', :git => 'https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git', :tag => '2.1.1'
-pod 'TinkoffASDKUI', :git => 'https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git', :tag => '2.1.1'
+pod 'TinkoffASDKCore', :git => 'https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git', :tag => '2.1.4'
+pod 'TinkoffASDKUI', :git => 'https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git', :tag => '2.1.4'

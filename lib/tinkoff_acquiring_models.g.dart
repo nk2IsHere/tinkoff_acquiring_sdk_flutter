@@ -85,6 +85,7 @@ TinkoffCommonResponse _$TinkoffCommonResponseFromJson(
         _$TinkoffAcquiringCommonStatusEnumMap, json['status']),
     cardId: json['cardId'] as String,
     paymentId: json['paymentId'] as int,
+    rebillId: json['rebillId'] as String,
     error: json['error'] as String,
   );
 }
@@ -95,6 +96,7 @@ Map<String, dynamic> _$TinkoffCommonResponseToJson(
       'status': _$TinkoffAcquiringCommonStatusEnumMap[instance.status],
       'cardId': instance.cardId,
       'paymentId': instance.paymentId,
+      'rebillId': instance.rebillId,
       'error': instance.error,
     };
 

@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'tinkoff_acquiring_sdk'
-  s.version          = '1.0.1'
+  s.version          = '1.0.2'
   s.summary          = 'Tinkoff Acquiring SDK bindings for Flutter.'
   s.description      = <<-DESC
   Tinkoff Acquiring SDK bindings for Flutter.
