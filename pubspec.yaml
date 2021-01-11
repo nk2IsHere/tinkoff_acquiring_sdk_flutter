@@ -1,6 +1,6 @@
 name: tinkoff_acquiring_sdk
 description: Tinkoff Acquiring SDK bindings.
-version: 1.0.2
+version: 1.0.3
 author: nk2 <nick@nk2.eu>
 homepage: https://github.com/nk2ishere/tinkoff_acquiring_sdk_flutter
 
