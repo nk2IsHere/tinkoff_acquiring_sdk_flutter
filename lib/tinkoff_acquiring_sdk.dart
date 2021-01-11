@@ -8,11 +8,11 @@ import 'package:tinkoff_acquiring_sdk/tinkoff_acquiring_models.dart';
 /// Maps Dart-styled enum .toString() to other-languages-styled
 /// (Dart) "TinkoffLanguage.RU" -> (Others) RU
 /// etc...
-String _mapEnumToString(dynamic value) => value.toString().split('.').last;
+String _mapEnumToString(dynamic value) => value?.toString()?.split('.')?.last;
 
 /// Due to some inconsistencies introduced in language handling of SDK iOS and Android versions it has to be mapped explicitly
 String _mapLanguageToPlatform(TinkoffLanguage value) => Platform.isIOS
-    ? _mapEnumToString(value).toLowerCase()
+    ? _mapEnumToString(value)?.toLowerCase()
     : _mapEnumToString(value);
 
 /// Internal enum that handles SDK initialization status

@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
                       checkType: TinkoffCheckType.HOLD,
                       enableSecureKeyboard: true,
                       enableCameraCardScanner: true,
-                      darkThemeMode: TinkoffDarkThemeMode.DISABLED,
+                      darkThemeMode: TinkoffDarkThemeMode.ENABLED,
                       language: TinkoffLanguage.RU);
                 },
                 child: Text("open saved cards screen")),
@@ -101,7 +101,7 @@ class _MyAppState extends State<MyApp> {
                       checkType: TinkoffCheckType.HOLD,
                       enableSecureKeyboard: true,
                       enableCameraCardScanner: true,
-                      darkThemeMode: TinkoffDarkThemeMode.DISABLED,
+                      darkThemeMode: null,
                       language: TinkoffLanguage.RU);
                 },
                 child: Text("open google pay")),
